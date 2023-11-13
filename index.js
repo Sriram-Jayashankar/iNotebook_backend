@@ -3,8 +3,13 @@ const express = require('express')
 
 connectToMongo();
 
+
+
 const app = express()
 const port = 3000
+
+//use this if you want json files in your body
+app.use(express.json());
 
 //available routes
 app.use('/api/auth',require('./routes/auth'))
