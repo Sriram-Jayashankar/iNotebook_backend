@@ -1,0 +1,15 @@
+{
+  "name": "backend_intoebook",
+  "version": "1.0.0",
+  "description": "iNotebook-YOur notebook on the cloud accesebile by anyone",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^8.0.0"
+  }
+}
