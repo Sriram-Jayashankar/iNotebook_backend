@@ -2,9 +2,13 @@ const express = require('express')
 const router = express.Router()
 const User = require("../models/User.js")
 const bcrypt=require("bcryptjs")
+const jwt=require("jsonwebtoken")
 const { body, validationResult } = require('express-validator');
 
-//check with a post req in api/auth/create user No login required this is for user signup
+
+JWT_SECRET="sriram@#$%5432"
+
+// route 1:check with a post req in api/auth/create user No login required this is for user signup
 router.post('/createuser',
     [body("name", "enter a valid name").isLength({ min: 5 }),
     body("email", "enter a valid email").isEmail(),
@@ -32,7 +36,11 @@ router.post('/createuser',
             password: hashpwd
 
         })
-        res.send(user)
+        const data={
+            user:{id:user.id}
+        }
+        const authtoken=jwt.sign(data,JWT_SECRET)
+        res.json({authtoken:authtoken})
     }
     catch(error){
         console.log("theres an error given below"+error)
@@ -44,7 +52,7 @@ router.post('/createuser',
 
 
 
-//check with a post req in api/auth/login user No login required
+//Route:2 check with a post req in api/auth/login user No login required
 router.post('/login',
 [body("email", "enter a valid email").isEmail(),
 body("password", "cannotbeblank").exists(),
@@ -55,18 +63,35 @@ body("password", "cannotbeblank").exists(),
     if (!result.isEmpty()) {
         return res.status(400).json({ errors: result.array() })
     }
-    const {name,email,password}=req.body
+    const {email,password}=req.body
     try{
-        let user=User.findOne({email})
-        if(user)
+        let user=await User.findOne({email})
+        if(!user)
+        {
+            return res.status(400).json({ errors: "Pls try to login correctly" })
+        }
+        console.log(password,user.password)
+        const passwordcompare=await bcrypt.compare(password,user.password)
+        if(!passwordcompare)
         {
             return res.status(400).json({ errors: "Pls try to login correct" })
         }
-        const passwordcompare=bcry
+        const data={
+            user:{id:user.id}
+        }
+        const authtoken=jwt.sign(data,JWT_SECRET)
+        res.json({authtoken:authtoken})
 
     }catch(error)
     {
-
+        console.log("theres an error given below"+error)
+        res.status(500).send("theres an internal server error")
     }
 })
+
+
+
+
+//Route:3 get logged in user details api/auth/getuser
+
 module.exports = router
