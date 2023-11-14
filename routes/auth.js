@@ -4,6 +4,7 @@ const User = require("../models/User.js")
 const bcrypt=require("bcryptjs")
 const jwt=require("jsonwebtoken")
 const { body, validationResult } = require('express-validator');
+const fetchuserdetails=require("../middleware/fetchuserdetails.js")
 
 
 JWT_SECRET="sriram@#$%5432"
@@ -52,7 +53,7 @@ router.post('/createuser',
 
 
 
-//Route:2 check with a post req in api/auth/login user No login required
+//Route:2 Login 
 router.post('/login',
 [body("email", "enter a valid email").isEmail(),
 body("password", "cannotbeblank").exists(),
@@ -92,6 +93,19 @@ body("password", "cannotbeblank").exists(),
 
 
 
-//Route:3 get logged in user details api/auth/getuser
-
+//Route:3 get user details
+router.post('/getuser',fetchuserdetails
+,async (req, res) => {
+    try{
+    //if there are errors return errors
+    const userid=req.user.id
+    const details=await User.findById(userid).select("-password")
+    res.json(details)
+    }catch(error)
+    {
+        console.log("theres an error given below"+error)
+        res.status(500).send("theres an internal server error")
+    }
+}
+)
 module.exports = router
