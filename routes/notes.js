@@ -51,11 +51,9 @@ router.post('/createnote',fetchuserdetails,[
 
 
 //route 3: to update a given note using title
-router.post('/updatenote',fetchuserdetails,[
-    body("title", "enter a valid title to be searched").isLength({ min: 5 }),
-    body("new_title", "enter a valid title").isLength({ min: 5 }),
-    body("new_description", "enter a valid description").isLength({ min: 5 })
-
+router.post('/updatenote/:id',fetchuserdetails,[
+    body("title", "enter a valid title").isLength({ min: 5 }),
+    body("description", "enter a valid description").isLength({ min: 5 })
 ],async (req,res)=>{
     try
     {
@@ -63,21 +61,56 @@ router.post('/updatenote',fetchuserdetails,[
         if (!result.isEmpty()) {
             return res.status(400).json({ errors: result.array() })
         }
-        let {title,new_title,new_description}=req.body
         const userid=req.user.id
-        //find note with that id
-        const note = await Notes.updateMany(
-            { title: title, userId: userid }, // Specify the conditions to match
-            { $set: { title: new_title, description: new_description } } // Specify the update operation
-        );
-        if (result.nModified > 0) {
-            res.send("updated succesfully ")
-        }
-        else
-        {
-            res.send("no change ")
+        let {title,description,tag}=req.body
 
+        //create a new note 
+        const newnote= {
+            user:userid,
+            title:title,
+            description:description,
+            tag:tag
         }
+
+        const note=await Notes.findById(req.params.id)
+        if(!note)
+        {
+            return res.status(400).send("unsuccessful")
+        }
+        //if a user is trying to access another note
+        if(note.user != userid)
+        {
+            console.log(note.user)
+
+            return res.status(401).send("not allowed")
+        }
+        updatednote=await Notes.findByIdAndUpdate(req.params.id,{$set:newnote},{new:true})
+        res.json(updatednote)
+    }catch(error){
+        console.log(error)
+        res.status(500).send("theres an error given below")
+    }
+})
+
+
+
+//route to .deleete to delete a aprticular node with the delete req
+router.delete('/deletenode/:id',fetchuserdetails,async (req,res)=>{
+    try
+    {
+        const userid=req.user.id
+        const note=await Notes.findById(req.params.id)
+        if(!note)
+        {
+            return res.status(400).send("unsuccessful")
+        }
+        //if a user is trying to access another note
+        if(note.user.toString() != userid)
+        {
+            return res.status(401).send("not allowed")
+        }
+        updatednote=await Notes.findByIdAndDelete(req.params.id)
+        res.json(updatednote)
     }catch(error){
         console.log(error)
         res.status(500).send("theres an error given below")
