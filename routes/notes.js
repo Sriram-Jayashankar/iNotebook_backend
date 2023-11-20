@@ -42,7 +42,7 @@ router.post('/createnote',fetchuserdetails,[
             }
         )
         const savednote=await note.save()
-        res.json(savednote)
+        res.json({savednote})
     }catch(error){
         console.log(error)
         res.status(500).send("theres an error given below")
