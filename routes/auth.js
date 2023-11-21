@@ -23,14 +23,12 @@ router.post('/createuser',
             return res.status(400).json({ errors: result.array() })
         }
         const k=await User.findOne({email:req.body.email})
-        console.log(k)
         if(k)
         {
             return res.status(400).json({ errors: "sorry A user with the given email id already exists" })
         }
         const salt=await bcrypt.genSalt(10)
         const hashpwd=await bcrypt.hash(req.body.password,salt)
-        console.log(hashpwd)
          const user=await User.create({
             name: req.body.name,
             email: req.body.email,
@@ -41,7 +39,7 @@ router.post('/createuser',
             user:{id:user.id}
         }
         const authtoken=jwt.sign(data,JWT_SECRET)
-        res.json({authtoken:authtoken})
+        res.json({type:"success",authtoken:authtoken})
     }
     catch(error){
         console.log("theres an error given below"+error)
@@ -71,7 +69,6 @@ body("password", "cannotbeblank").exists(),
         {
             return res.status(400).json({ errors: "Pls try to login correctly" })
         }
-        console.log(password,user.password)
         const passwordcompare=await bcrypt.compare(password,user.password)
         if(!passwordcompare)
         {
@@ -81,7 +78,7 @@ body("password", "cannotbeblank").exists(),
             user:{id:user.id}
         }
         const authtoken=jwt.sign(data,JWT_SECRET)
-        res.json({authtoken:authtoken})
+        res.json({type:"success",authtoken:authtoken})
 
     }catch(error)
     {
@@ -100,7 +97,7 @@ router.post('/getuser',fetchuserdetails
     //if there are errors return errors
     const userid=req.user.id
     const details=await User.findById(userid).select("-password")
-    res.json(details)
+    res.json({type:"success",details:details})
     }catch(error)
     {
         console.log("theres an error given below"+error)
